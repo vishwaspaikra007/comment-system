@@ -10,8 +10,9 @@
   }
   .container {
     width: 40%;
-    min-width: 500px;
-  }
+    min-width: 400px;
+    margin: auto;
+  } 
   form {
     margin: 0;
   }
@@ -32,6 +33,11 @@
     padding: 6px;
     margin-top: 10px;
   }
+  @media only screen and (max-width:1000px) {
+    .container {
+      width: 98%;
+    }
+  }
 </style>
 </head>
 <body ng-controller="postController">
@@ -46,7 +52,7 @@
   <p>press Enter to post your comment</p>
 
   <div id="comments" ng-init="loadComments()">
-    <div  ng-repeat="comm in comments.data track by $index">
+    <div  ng-repeat="comm in comments.data.slice().reverse() track by $index">
       <b style="padding: 5px;border-radius:5px;background:orange">{{comm.name}}</b><p>{{comm.comment}}</p>
       <div style="margin-bottom: 20px">
         <span  ng-click="reply(comm._id)" id="replyBtn">reply</span>
@@ -63,7 +69,7 @@
         </div>
 
         <div ng-Class="'b' + comm._id + ' ' + 'readReplyBlock'" style="margin-left: 30px;">
-            <div  ng-repeat="comm in replies[comm._id].data track by $index">
+            <div  ng-repeat="comm in replies[comm._id].data.slice().reverse() track by $index">
                 <b style="padding: 5px;border-radius:5px;background:orange">{{comm.name}}</b>
                 <p>{{comm.comment}}</p>          
             </div>
@@ -89,10 +95,14 @@ var postController = ($scope, $http) => {
     };
 
     $http.post("http://localhost:3000/customer", data)
-    .then( x => {
+    .then( ob => {
       // console.log(x);
       $scope.name  = "";
       $scope.comment  = "";
+      if(x=="none")
+        $scope.loadComments();
+      else
+        $scope.showReply(x,'skip');
     }).catch(x => {
       console.log(x);
     })
@@ -127,7 +137,7 @@ var postController = ($scope, $http) => {
       }
   }
 
-  $scope.showReply = (x)=> {
+  $scope.showReply = (x,y)=> {
     
     $http.get(`http://localhost:3000/customer?parent=${x}`)
           .then(function(response) {
@@ -143,18 +153,21 @@ var postController = ($scope, $http) => {
               }); 
     
     let replyBLock = document.querySelector(`.b${x}`)
-    if(replyBLock.style.height == "0px" ||
+    if (y != 'skip')
+    {
+      if(replyBLock.style.height == "0px" ||
         replyBLock.style.height == "0"  ||
         replyBLock.style.height == "" )
         {
         replyBLock.style.height = "auto";
         replyBLock.style.padding = "6px";
         }
-    else
-      {
-        replyBLock.style.height = "0px";
-        replyBLock.style.padding = "0px";
-      }
+      else
+        {
+          replyBLock.style.height = "0px";
+          replyBLock.style.padding = "0px";
+        }
+    }
   }
 }
   
