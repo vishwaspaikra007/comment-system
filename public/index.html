@@ -139,7 +139,7 @@ var postController = ($scope, $http) => {
 
   $scope.showReply = (x,y)=> {
     
-    $http.get(`http://localhost:3000/customer?parent=${x}`)
+    $http.get(`${window.location.href}customer?parent=${x}`)
           .then(function(response) {
               $scope.replies[x] = response;
               if(response.data.length == 0)
