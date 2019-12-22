@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html ng-app="postModule">
+<head>
+<script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.7.5/angular.min.js"></script>
+<style>
+  * {
+    box-sizing: border-box;
+  } body {
+    margin: 40px;
+  }
+  .container {
+    width: 40%;
+    min-width: 500px;
+  }
+  form {
+    margin: 0;
+  }
+  input {
+    padding: 10px;
+    margin: 10px;
+    border-radius: 10px;
+    width: -webkit-fill-available;
+  } #replyBtn, #showReplyBtn {
+    color: blue;
+    cursor: pointer;
+  } #replyBtn:hover, #showReplyBtn:hover {
+    opacity: 0.6;
+  } .replyBlock {
+    height: 0px;
+    overflow: hidden;
+  }
+</style>
+</head>
+<body ng-controller="postController">
+<div class="container">
+  <form method="post"
+  ng-submit = "validateFormOnSubmit('none', name, comment);">
+    First name: <br><input type="text" name="name" ng-model="name" placeholder="your name"><br>
+    Comment: <br><input type="text" name="comment" ng-model="comment" placeholder="your comment"><br>
+    <input type="submit" value="Submit" style="width:100px;background:darkcyan;color:white">
+  </form>
+
+  <p>press Enter to post your comment</p>
+
+  <div id="comments" ng-init="loadComments()">
+    <div  ng-repeat="comm in comments.data track by $index">
+      <b style="padding: 5px;border-radius:5px;background:orange">{{comm.name}}</b><p>{{comm.comment}}</p>
+      <div style="margin-bottom: 20px">
+        <span  ng-click="reply(comm._id)" id="replyBtn">reply</span>
+        <span  ng-click="showReply(comm._id)" id="showReplyBtn">Show replies</span>
+        <div ng-Class="'a' + comm._id + ' ' + 'replyBlock'" style="margin-left: 30px;">
+          <div>
+          <form method="post"
+          ng-submit = "validateFormOnSubmit(comm._id, name, comment);">
+            First name: <br><input type="text" name="name" ng-model="name" placeholder="your name"><br>
+            {{name}}
+            Comment: <br><input type="text" name="comment" ng-model="comment" placeholder="your comment"><br>
+            <input type="submit" value="Submit" style="width:100px;background:darkcyan;color:white">
+          </form>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<script>
+
+
+var app = angular.module("postModule", []);
+var postController = ($scope, $http) => {
+  $scope.name  = "";
+  $scope.comment  = "";
+  $scope.comments  = {};
+
+  $scope.validateFormOnSubmit = (x,n,c) => {
+  var data = {
+      name : n,
+      comment : c,
+      parent : x
+    };
+
+    $http.post("http://localhost:3000/customer", data)
+    .then( x => {
+      console.log(x);
+    }).catch(x => {
+      console.log(x);
+    })
+  }
+  $scope.loadComments = ()=> {
+    $http.get("http://localhost:3000/customer")
+          .then(function(response) {
+              $scope.comments = response;
+              console.log(response);
+              },
+            function(error) {
+              alert(error);
+              }).catch(err => {
+                console.log(err);
+              }); 
+  }
+
+  $scope.reply = id => {
+    console.log(id);
+    let replyBLock = document.querySelector(`.a${id}`)
+    if(replyBLock.style.height == "0px" ||
+        replyBLock.style.height == "0"  ||
+        replyBLock.style.height == "" )
+      replyBLock.style.height = "auto";
+    else
+      replyBLock.style.height = "0px"; 
+  }
+}
+  
+app.controller("postController",postController);
+</script>
+</body>
+</html>
+
