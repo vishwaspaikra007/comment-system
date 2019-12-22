@@ -25,9 +25,12 @@
     cursor: pointer;
   } #replyBtn:hover, #showReplyBtn:hover {
     opacity: 0.6;
-  } .replyBlock {
+  } .replyBlock, .readReplyBlock {
     height: 0px;
     overflow: hidden;
+  } .readReplyBlock {
+    padding: 6px;
+    margin-top: 10px;
   }
 </style>
 </head>
@@ -36,7 +39,7 @@
   <form method="post"
   ng-submit = "validateFormOnSubmit('none', name, comment);">
     First name: <br><input type="text" name="name" ng-model="name" placeholder="your name"><br>
-    Comment: <br><input type="text" name="comment" ng-model="comment" placeholder="your comment"><br>
+    Comment: <br><input type="textArea" name="comment" ng-model="comment" placeholder="your comment"><br>
     <input type="submit" value="Submit" style="width:100px;background:darkcyan;color:white">
   </form>
 
@@ -53,11 +56,17 @@
           <form method="post"
           ng-submit = "validateFormOnSubmit(comm._id, name, comment);">
             First name: <br><input type="text" name="name" ng-model="name" placeholder="your name"><br>
-            {{name}}
             Comment: <br><input type="text" name="comment" ng-model="comment" placeholder="your comment"><br>
             <input type="submit" value="Submit" style="width:100px;background:darkcyan;color:white">
           </form>
           </div>
+        </div>
+
+        <div ng-Class="'b' + comm._id + ' ' + 'readReplyBlock'" style="margin-left: 30px;">
+            <div  ng-repeat="comm in replies[comm._id].data track by $index">
+                <b style="padding: 5px;border-radius:5px;background:orange">{{comm.name}}</b>
+                <p>{{comm.comment}}</p>          
+            </div>
         </div>
       </div>
     </div>
@@ -71,7 +80,7 @@ var postController = ($scope, $http) => {
   $scope.name  = "";
   $scope.comment  = "";
   $scope.comments  = {};
-
+  $scope.replies = {};
   $scope.validateFormOnSubmit = (x,n,c) => {
   var data = {
       name : n,
@@ -81,16 +90,18 @@ var postController = ($scope, $http) => {
 
     $http.post("http://localhost:3000/customer", data)
     .then( x => {
-      console.log(x);
+      // console.log(x);
+      $scope.name  = "";
+      $scope.comment  = "";
     }).catch(x => {
       console.log(x);
     })
   }
   $scope.loadComments = ()=> {
-    $http.get("http://localhost:3000/customer")
+    $http.get("http://localhost:3000/customer?parent=none")
           .then(function(response) {
               $scope.comments = response;
-              console.log(response);
+              // console.log(response);
               },
             function(error) {
               alert(error);
@@ -105,9 +116,45 @@ var postController = ($scope, $http) => {
     if(replyBLock.style.height == "0px" ||
         replyBLock.style.height == "0"  ||
         replyBLock.style.height == "" )
-      replyBLock.style.height = "auto";
+      {
+        replyBLock.style.height = "auto";
+        replyBLock.style.padding = "6px";
+      }
     else
-      replyBLock.style.height = "0px"; 
+      {
+        replyBLock.style.padding = "0px";
+        replyBLock.style.height = "0px"; 
+      }
+  }
+
+  $scope.showReply = (x)=> {
+    
+    $http.get(`http://localhost:3000/customer?parent=${x}`)
+          .then(function(response) {
+              $scope.replies[x] = response;
+              if(response.data.length == 0)
+                $scope.replies[x].data = [{name:"NO replies"}];
+              // console.log(response);
+              },
+            function(error) {
+              alert(error);
+              }).catch(err => {
+                console.log(err);
+              }); 
+    
+    let replyBLock = document.querySelector(`.b${x}`)
+    if(replyBLock.style.height == "0px" ||
+        replyBLock.style.height == "0"  ||
+        replyBLock.style.height == "" )
+        {
+        replyBLock.style.height = "auto";
+        replyBLock.style.padding = "6px";
+        }
+    else
+      {
+        replyBLock.style.height = "0px";
+        replyBLock.style.padding = "0px";
+      }
   }
 }
   

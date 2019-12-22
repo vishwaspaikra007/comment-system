@@ -26,10 +26,9 @@ router.get('/customer',(req, res)=> {
     if(!req.body) {
         return res.status(400).send("Request body is missing")
     }
-    // customerModel.findOne({
-    //     email:req.query.email
-    // })
-    customerModel.find({})
+    customerModel.find({
+        parent:req.query.parent,
+    })
     .then(doc => {
         res.json(doc)
     })
@@ -37,6 +36,7 @@ router.get('/customer',(req, res)=> {
         res.status(500).json(err)
     })
 })
+
 // ................................................................
 router.put('/customer',(req, res)=> {
     if(!req.body) {
