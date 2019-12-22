@@ -94,7 +94,7 @@ var postController = ($scope, $http) => {
       parent : x
     };
 
-    $http.post("http://localhost:3000/customer", data)
+    $http.post(`${window.location.href}customer`, data)
     .then( ob => {
       // console.log(x);
       $scope.name  = "";
@@ -108,7 +108,7 @@ var postController = ($scope, $http) => {
     })
   }
   $scope.loadComments = ()=> {
-    $http.get("http://localhost:3000/customer?parent=none")
+    $http.get(`${window.location.href}customer?parent=none`)
           .then(function(response) {
               $scope.comments = response;
               // console.log(response);
