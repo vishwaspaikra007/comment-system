@@ -104,7 +104,7 @@ var postController = ($scope, $http) => {
       if(x=="none")
         $scope.loadComments();
       else
-        $scope.showReply(x,'skip');
+        $scope.showReply(x);
     }).catch(x => {
       console.log(x);
     })
@@ -139,7 +139,7 @@ var postController = ($scope, $http) => {
       }
   }
 
-  $scope.showReply = (x,y)=> {
+  $scope.showReply = x => {
     
     $http.get(`${window.location.href}customer?parent=${x}`)
           .then(function(response) {
@@ -155,21 +155,18 @@ var postController = ($scope, $http) => {
               }); 
     
     let replyBLock = document.querySelector(`.b${x}`)
-    if (y != 'skip')
-    {
-      if(replyBLock.style.height == "0px" ||
-        replyBLock.style.height == "0"  ||
-        replyBLock.style.height == "" )
-        {
-        replyBLock.style.height = "auto";
-        replyBLock.style.padding = "6px";
-        }
-      else
-        {
-          replyBLock.style.height = "0px";
-          replyBLock.style.padding = "0px";
-        }
-    }
+    if(replyBLock.style.height == "0px" ||
+      replyBLock.style.height == "0"  ||
+      replyBLock.style.height == "" )
+      {
+      replyBLock.style.height = "auto";
+      replyBLock.style.padding = "6px";
+      }
+    else
+      {
+        replyBLock.style.height = "0px";
+        replyBLock.style.padding = "0px";
+      }
   }
 }
   
