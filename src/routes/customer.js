@@ -1,6 +1,7 @@
 let customerModel = require('../models/customer.model')
 let express = require('express')
 let router = express.Router()
+var https = require('https');
 
 // this is where mongo db is doing a work
 
@@ -55,19 +56,25 @@ router.put('/customer',(req, res)=> {
     })
 })
 
-router.delete('/customer',(req, res)=> {
-    if(!req.body) {
-        return res.status(400).send("Request body is missing")
-    }
-    customerModel.findOneAndDelete({
-        email:req.query.email
-    })
-    .then(doc => {
-        res.json(doc)
+router.delete('/deleteReply',(req, res)=> {
+    customerModel.findByIdAndDelete(req.query.id)
+    .then(result => {
+        res.send(result);
     })
     .catch(err => {
         res.status(500).json(err)
     })
 })
  
+router.delete('/deleteComment',(req, res)=> {
+    customerModel.deleteMany(
+        {parent: req.query.id})
+    .then(result => {
+        res.send(result);
+    })
+    .catch(err => {
+        res.status(500).json(err)
+    })
+    });
+
 module.exports = router

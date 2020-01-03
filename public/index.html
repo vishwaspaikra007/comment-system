@@ -22,10 +22,10 @@
     margin: 10px;
     border-radius: 10px;
     width: -webkit-fill-available;
-  } #replyBtn, #showReplyBtn {
+  } #replyBtn, #showReplyBtn, #deleteBtn {
     color: blue;
     cursor: pointer;
-  } #replyBtn:hover, #showReplyBtn:hover {
+  } #replyBtn:hover, #showReplyBtn:hover, #deleteBtn:hover {
     opacity: 0.6;
   } .replyBlock, .readReplyBlock {
     height: 0px;
@@ -59,6 +59,7 @@
       <div style="margin-bottom: 20px">
         <span  ng-click="reply(comm._id)" id="replyBtn">reply</span>
         <span  ng-click="showReply(comm._id)" id="showReplyBtn">Show replies</span>
+        <span  ng-click="deleteComment(comm._id, 'comment')" id="deleteBtn">Delete</span>
         <div ng-Class="'a' + comm._id + ' ' + 'replyBlock'" style="margin-left: 30px;">
           <div>
           <form method="post"
@@ -71,9 +72,11 @@
         </div>
 
         <div ng-Class="'b' + comm._id + ' ' + 'readReplyBlock'" style="margin-left: 30px;">
-            <div  ng-repeat="comm in replies[comm._id].data.slice().reverse() track by $index">
-                <b style="padding: 5px;border-radius:5px;background:orange">{{comm.name}}</b>
-                <p>{{comm.comment}}</p>          
+            <div  ng-repeat="com in replies[comm._id].data.slice().reverse() track by $index">
+                <b style="padding: 5px;border-radius:5px;background:orange">{{com.name}}</b>
+                <span  ng-click="deleteReply(com._id, comm._id, 'reply')" 
+                id="deleteBtn" ng-if="com.comment">Delete</span>                
+                <p>{{com.comment}}</p>          
             </div>
         </div>
       </div>
@@ -104,7 +107,7 @@ var postController = ($scope, $http) => {
       if(x=="none")
         $scope.loadComments();
       else
-        $scope.showReply(x);
+        $scope.showReply(x, "open");
     }).catch(x => {
       console.log(x);
     })
@@ -139,7 +142,7 @@ var postController = ($scope, $http) => {
       }
   }
 
-  $scope.showReply = x => {
+  $scope.showReply = (x,stat) => {
     
     $http.get(`${window.location.href}customer?parent=${x}`)
           .then(function(response) {
@@ -155,18 +158,51 @@ var postController = ($scope, $http) => {
               }); 
     
     let replyBLock = document.querySelector(`.b${x}`)
-    if(replyBLock.style.height == "0px" ||
-      replyBLock.style.height == "0"  ||
-      replyBLock.style.height == "" )
-      {
-      replyBLock.style.height = "auto";
-      replyBLock.style.padding = "6px";
+      if(replyBLock.style.height == "0px" ||
+        replyBLock.style.height == "0"  ||
+        replyBLock.style.height == "" ||
+        stat === "open")
+        {
+        replyBLock.style.height = "auto";
+        replyBLock.style.padding = "6px";
+        }
+      else
+        {
+          replyBLock.style.height = "0px";
+          replyBLock.style.padding = "0px";
+        }
+  }
+
+  $scope.deleteReply = (id, pid, type)=> {
+    console.log(id);
+    $http.delete(`${window.location.href}deleteReply?id=${id}`)
+    .then(result => {
+      if(result) {
+          $scope.showReply(pid, 'open');
+      } else {
+        console.log("delete operation")
       }
-    else
-      {
-        replyBLock.style.height = "0px";
-        replyBLock.style.padding = "0px";
+    }).catch(err => {
+      console.log(err)
+    })
+  }
+
+  $scope.deleteComment = (id, type)=> {
+    console.log(id);
+    $http.delete(`${window.location.href}deleteComment?id=${id}`)
+    .then(result => {
+      if(result) {
+          $http.delete(`${window.location.href}deleteReply?id=${id}`)
+          .then(x => {
+            $scope.loadComments();
+          })
+      } else {
+        console.log("delete operation")
       }
+
+    }).catch(err => {
+      console.log(err)
+    })
   }
 }
   
