@@ -45,9 +45,9 @@
 <body ng-controller="postController">
 <div class="container">
   <form method="post"
-  ng-submit = "validateFormOnSubmit('none', name, comment);">
-    First name: <br><input type="text" name="name" ng-model="name" placeholder="your name"><br>
-    Comment: <br><input type="textArea" name="comment" ng-model="comment" placeholder="your comment"><br>
+  ng-submit = "validateFormOnSubmit('none', name['none'], comment['none']);">
+    First name: <br><input type="text" name="name" ng-model="name['none']" placeholder="your name"><br>
+    Comment: <br><input type="textArea" name="comment" ng-model="comment['none']" placeholder="your comment"><br>
     <input type="submit" value="Submit" style="width:100px;background:darkcyan;color:white">
   </form>
 
@@ -63,9 +63,9 @@
         <div ng-Class="'a' + comm._id + ' ' + 'replyBlock'" style="margin-left: 30px;">
           <div>
           <form method="post"
-          ng-submit = "validateFormOnSubmit(comm._id, name, comment);">
-            First name: <br><input type="text" name="name" ng-model="name" placeholder="your name"><br>
-            Comment: <br><input type="text" name="comment" ng-model="comment" placeholder="your comment"><br>
+          ng-submit = "validateFormOnSubmit(comm._id, name[comm._id], comment[comm._id]);">
+            First name: <br><input type="text" name="name" ng-model="name[comm._id]" placeholder="your name"><br>
+            Comment: <br><input type="text" name="comment" ng-model="comment[comm._id]" placeholder="your comment"><br>
             <input type="submit" value="Submit" style="width:100px;background:darkcyan;color:white">
           </form>
           </div>
@@ -88,8 +88,8 @@
 
 var app = angular.module("postModule", []);
 var postController = ($scope, $http) => {
-  $scope.name  = "";
-  $scope.comment  = "";
+  $scope.name  = {};
+  $scope.comment  = {};
   $scope.comments  = {};
   $scope.replies = {};
   $scope.validateFormOnSubmit = (x,n,c) => {
@@ -98,12 +98,10 @@ var postController = ($scope, $http) => {
       comment : c,
       parent : x
     };
-
+    
     $http.post(`${window.location.href}customer`, data)
     .then( ob => {
-      // console.log(x);
-      $scope.name  = "";
-      $scope.comment  = "";
+
       if(x=="none")
         $scope.loadComments();
       else
@@ -113,10 +111,18 @@ var postController = ($scope, $http) => {
     })
   }
   $scope.loadComments = ()=> {
+    $scope.name['none'] = "";
+    $scope.comment['none'] = "";
+
     $http.get(`${window.location.href}customer?parent=none`)
           .then(function(response) {
               $scope.comments = response;
-              // console.log(response);
+              $scope.comments.data.map(data => {
+                if(!$scope.name[data._id])
+                  $scope.name[data._id] = "";
+                if(!$scope.comment[data._id])
+                  $scope.comment[data._id] = "";
+              })
               },
             function(error) {
               alert(error);
@@ -126,7 +132,6 @@ var postController = ($scope, $http) => {
   }
 
   $scope.reply = id => {
-    console.log(id);
     let replyBLock = document.querySelector(`.a${id}`)
     if(replyBLock.style.height == "0px" ||
         replyBLock.style.height == "0"  ||
@@ -143,16 +148,16 @@ var postController = ($scope, $http) => {
   }
 
   $scope.showReply = (x,stat) => {
-    
+    $scope.name[x] = "";    
+    $scope.comment[x] = "";    
     $http.get(`${window.location.href}customer?parent=${x}`)
           .then(function(response) {
               $scope.replies[x] = response;
               if(response.data.length == 0)
                 $scope.replies[x].data = [{name:"NO replies"}];
-              // console.log(response);
               },
             function(error) {
-              alert(error);
+              console(error);
               }).catch(err => {
                 console.log(err);
               }); 
@@ -174,13 +179,12 @@ var postController = ($scope, $http) => {
   }
 
   $scope.deleteReply = (id, pid, type)=> {
-    console.log(id);
     $http.delete(`${window.location.href}deleteReply?id=${id}`)
     .then(result => {
       if(result) {
           $scope.showReply(pid, 'open');
       } else {
-        console.log("delete operation")
+        alert("delete operation failed")
       }
     }).catch(err => {
       console.log(err)
@@ -188,7 +192,6 @@ var postController = ($scope, $http) => {
   }
 
   $scope.deleteComment = (id, type)=> {
-    console.log(id);
     $http.delete(`${window.location.href}deleteComment?id=${id}`)
     .then(result => {
       if(result) {
@@ -197,7 +200,7 @@ var postController = ($scope, $http) => {
             $scope.loadComments();
           })
       } else {
-        console.log("delete operation")
+        alert("delete operation failed")
       }
 
     }).catch(err => {
