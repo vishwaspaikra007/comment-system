@@ -8,11 +8,18 @@
     box-sizing: border-box;
   } body {
     margin: 40px;
+    background-image: url('https://www.tokkoro.com/picsup/1337587-deadpool.jpg');
+    background-attachment: fixed;
+    background-size: cover;
+    background-position: center 0px;
   }
   .container {
     width: 40%;
     min-width: 400px;
     margin: auto;
+    background: rgba(255,255,255,0.6);
+    padding: 10px;
+    margin-top: 50vh;
   } 
   form {
     margin: 0;
@@ -34,10 +41,14 @@
     padding: 6px;
     margin-top: 10px;
   }
+
   @media only screen and (max-width:1000px) {
     .container {
-      width: 98%;
+      width: 100%;
       min-width: 300px;
+    }
+    body {
+      margin: 0;
     }
   }
 </style>
